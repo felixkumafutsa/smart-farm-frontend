@@ -27,14 +27,14 @@ const Login = ({ onLoginSuccess }) => {
     };
 
     return (
-        <div className="flex items-center justify-center min-vh-100 p-4">
+        <div className="flex items-center justify-center min-h-screen p-4">
             <div className="glass-panel w-full max-w-md p-8 animate-in fade-in zoom-in duration-500">
                 <div className="flex flex-col items-center mb-8">
                     <div className="p-3 rounded-full bg-cyan-glow/10 border border-cyan-glow/30 mb-4">
                         <Beaker className="w-8 h-8 text-cyan-glow" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Quantum Farm Access</h1>
-                    <p className="text-sm text-text-muted">Enter laboratory credentials to continue</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Smart farm monitor</h1>
+                    <p className="text-sm text-text-muted text-center">Login to your centralized monitoring suite</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
