@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Thermometer, Droplets, Unplug, Sun, Activity, LogOut, Terminal, Plus, ChevronDown, MapPin } from 'lucide-react';
+import { Thermometer, Droplets, Unplug, Sun, Activity, LogOut, Terminal, Plus, ChevronDown, MapPin, Cpu } from 'lucide-react';
 import MetricCard from './MetricCard';
 import Charts from './Charts';
 import { fetchLatestData, fetchHistoryData, fetchDevices } from '../services/api';
@@ -65,7 +65,7 @@ const Dashboard = ({ onLogout }) => {
     );
   }
 
-  const isOnline = latestData?.status === 'online';
+  const isOnline = !!latestData; // Device is online if we have recent data
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -142,6 +142,16 @@ const Dashboard = ({ onLogout }) => {
           >
             <Plus size={20} /> Provision First Unit
           </button>
+        </div>
+      ) : !latestData ? (
+        <div className="glass-panel p-12 text-center animate-fade-in">
+          <div className="w-20 h-20 bg-accent-danger/10 border border-accent-danger/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Activity className="text-accent-danger" size={40} />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">No Data Available</h2>
+          <p className="text-text-muted max-w-md mx-auto mb-8">
+            No telemetry readings found for the selected device. Ensure your device is transmitting data.
+          </p>
         </div>
       ) : (
         <>
