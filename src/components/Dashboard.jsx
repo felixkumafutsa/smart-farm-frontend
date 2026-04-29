@@ -67,8 +67,105 @@ const Dashboard = ({ onLogout }) => {
 
   const isOnline = !!latestData; // Device is online if we have recent data
 
+  const sidebarItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'devices', label: 'Devices', icon: Cpu },
+    { id: 'alerts', label: 'Alerts', icon: Bell },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="flex min-h-screen bg-bg-primary">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-bg-secondary border-r border-border-light transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex flex-col h-full">
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between p-6 border-b border-border-light">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-accent-primary/10 border border-accent-primary/20 rounded-lg">
+                <Terminal className="w-6 h-6 text-accent-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">Smart Farm</h2>
+                <p className="text-xs text-text-muted font-mono">CONTROL CENTER</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden p-2 text-text-muted hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Navigation Items */}
+          <nav className="flex-1 p-4">
+            <div className="space-y-2">
+              {sidebarItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveSection(item.id);
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
+                      activeSection === item.id
+                        ? 'bg-accent-primary/10 text-accent-primary border border-accent-primary/20'
+                        : 'text-text-muted hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-border-light">
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 text-text-muted hover:text-accent-danger hover:bg-accent-danger/10 rounded-lg transition-all"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 bg-bg-secondary/50 border-b border-border-light">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 text-text-muted hover:text-white transition-colors"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full animate-pulse ${!isOnline ? 'bg-accent-danger' : 'bg-accent-secondary'}`}></div>
+            <span className={`text-xs font-bold uppercase tracking-wider ${isOnline ? 'text-accent-secondary' : 'text-accent-danger'}`}>
+              {isOnline ? 'Online' : 'Offline'}
+            </span>
+          </div>
+        </div>
+
+        {/* Main Dashboard Content */}
+        <div className="flex-1 p-4 md:p-8 overflow-auto">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 animate-in fade-in slide-in-from-top duration-700">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-accent-primary/10 border border-accent-primary/20 rounded-xl">
