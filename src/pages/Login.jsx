@@ -98,7 +98,7 @@ const Login = ({ onLoginSuccess }) => {
 
                 <div className="mt-8 pt-6 border-t border-border-light/50 text-center">
                     <p className="text-[10px] text-text-muted uppercase tracking-[0.2em]">
-                        Precision Agriculture Control v4.0.2
+                        Precision Agriculture Control v1.0
                     </p>
                 </div>
             </div>
