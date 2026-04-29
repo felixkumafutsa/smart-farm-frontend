@@ -4,6 +4,7 @@ import MetricCard from './MetricCard';
 import Charts from './Charts';
 import { fetchLatestData, fetchHistoryData, fetchDevices } from '../services/api';
 import RegisterDeviceModal from './RegisterDeviceModal';
+import DevicesPage from './DevicesPage';
 
 const Dashboard = ({ onLogout }) => {
   const [devices, setDevices] = useState([]);
@@ -162,6 +163,12 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </div>
         {/* Main Dashboard Content */}
+        {activeSection === 'devices' ? (
+          <DevicesPage 
+            devices={devices} 
+            onAddDevice={() => setShowRegisterModal(true)} 
+          />
+        ) : (
         <div className="flex-1 p-4 md:p-8 overflow-auto">
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 animate-in fade-in slide-in-from-top duration-700">
             <div className="flex items-center gap-4">
@@ -298,18 +305,20 @@ const Dashboard = ({ onLogout }) => {
                    </div>
                  )}
               </div>
-              {showRegisterModal && (
-                <RegisterDeviceModal 
-                  onClose={() => setShowRegisterModal(false)}
-                  onDeviceAdded={(newDevice) => {
-                    setDevices(prev => [...prev, newDevice]);
-                    if (!selectedDevice) setSelectedDevice(newDevice);
-                  }}
-                />
-              )}
             </>
           )}
         </div>
+        )}
+
+        {showRegisterModal && (
+          <RegisterDeviceModal 
+            onClose={() => setShowRegisterModal(false)}
+            onDeviceAdded={(newDevice) => {
+              setDevices(prev => [...prev, newDevice]);
+              if (!selectedDevice) setSelectedDevice(newDevice);
+            }}
+          />
+        )}
       </div> 
     </div> 
   );
