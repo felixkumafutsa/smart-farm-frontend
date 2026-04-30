@@ -1,6 +1,7 @@
 import React from 'react';
 
-const MetricCard = ({ title, value, unit, icon: Icon, delayClass, min = 0, max = 100, color = 'var(--accent-primary)' }) => {
+const MetricCard = ({ title, value, unit, icon, delayClass, min = 0, max = 100, color = 'var(--accent-primary)' }) => {
+  const Icon = icon;
   // Safe parsing of value ensuring it's a number
   const numValue = parseFloat(value);
   const isValid = !isNaN(numValue);
