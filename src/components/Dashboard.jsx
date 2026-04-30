@@ -54,6 +54,8 @@ const Dashboard = ({ onLogout }) => {
       setHistoryData(history.reverse()); // Reverse to chronological order for charts
     } catch (error) {
       console.error("Dashboard error fetching data", error);
+      setLatestData(null); // Clear data if fetch fails (e.g., 404 No Data)
+      setHistoryData([]);
     } finally {
       setLoading(false);
     }
@@ -66,6 +68,8 @@ const Dashboard = ({ onLogout }) => {
 
   useEffect(() => {
     if (selectedDevice) {
+      setLatestData(null); // Clear old data immediately to prevent "ghost" data
+      setHistoryData([]);
       loadData();
       const interval = setInterval(loadData, 10000);
       return () => clearInterval(interval);
