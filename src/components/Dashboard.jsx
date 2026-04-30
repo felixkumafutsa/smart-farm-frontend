@@ -318,13 +318,13 @@ const Dashboard = ({ onLogout }) => {
                   color="var(--accent-primary)"
                 />
                 <MetricCard 
-                  title="Soil Moisture" 
-                  value={latestData?.soil_moisture || '--'} 
-                  unit="" 
-                  icon={Unplug} 
+                  title={latestData?.water_level !== undefined ? "Water Level" : "Soil Moisture"} 
+                  value={latestData?.water_level !== undefined ? latestData.water_level : latestData?.soil_moisture || '--'} 
+                  unit={latestData?.water_level !== undefined ? "L" : ""} 
+                  icon={latestData?.water_level !== undefined ? Activity : Unplug} 
                   delayClass="delay-3"
                   min={0}
-                  max={1000}
+                  max={latestData?.water_level !== undefined ? 1000 : 100}
                   color="var(--accent-secondary)"
                 />
                 <MetricCard 

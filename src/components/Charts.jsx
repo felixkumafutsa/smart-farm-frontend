@@ -46,6 +46,10 @@ const Charts = ({ data }) => {
               <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.4}/>
               <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0}/>
             </linearGradient>
+            <linearGradient id="colorSoil" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="var(--accent-secondary)" stopOpacity={0.4}/>
+              <stop offset="95%" stopColor="var(--accent-secondary)" stopOpacity={0}/>
+            </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" vertical={false} />
           <XAxis 
@@ -76,6 +80,26 @@ const Charts = ({ data }) => {
             strokeWidth={3}
             fillOpacity={1} 
             fill="url(#colorHum)" 
+          />
+          <Area 
+            type="monotone" 
+            dataKey="soil_moisture" 
+            name="Soil Moisture (%)"
+            stroke="var(--accent-secondary)" 
+            strokeWidth={3}
+            fillOpacity={1} 
+            fill="url(#colorSoil)" 
+            connectNulls
+          />
+          <Area 
+            type="monotone" 
+            dataKey="water_level" 
+            name="Water Level (L)"
+            stroke="var(--accent-secondary)" 
+            strokeWidth={3}
+            fillOpacity={1} 
+            fill="url(#colorSoil)" 
+            connectNulls
           />
         </AreaChart>
       </ResponsiveContainer>
