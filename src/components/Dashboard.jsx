@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Thermometer, Droplets, Unplug, Sun, Activity, LogOut, Terminal, Plus, ChevronDown, MapPin, Cpu, Menu, X, Home, BarChart3, Bell, Settings } from 'lucide-react';
 import MetricCard from './MetricCard';
 import Charts from './Charts';
@@ -15,6 +15,18 @@ const Dashboard = ({ onLogout }) => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // Sidebar state
   const [activeSection, setActiveSection] = useState('dashboard'); // For sidebar highlight
+  const [deviceDropdownOpen, setDeviceDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDeviceDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const loadDevices = async () => {
     try {
@@ -170,13 +182,18 @@ const Dashboard = ({ onLogout }) => {
             onAddDevice={() => setShowRegisterModal(true)} 
             onUpdateDevice={(updated) => {
               setDevices(prev => prev.map(d => d.device_id === updated.device_id ? { ...d, ...updated } : d));
+              if (selectedDevice?.device_id === updated.device_id) {
+                setSelectedDevice(prev => ({ ...prev, ...updated }));
+              }
             }}
             onDeleteDevice={(deviceId) => {
-              setDevices(prev => prev.filter(d => d.device_id !== deviceId));
-              if (selectedDevice?.device_id === deviceId) {
-                const remaining = devices.filter(d => d.device_id !== deviceId);
-                setSelectedDevice(remaining.length > 0 ? remaining[0] : null);
-              }
+              setDevices(prev => {
+                const updatedDevices = prev.filter(d => d.device_id !== deviceId);
+                if (selectedDevice?.device_id === deviceId) {
+                  setSelectedDevice(updatedDevices.length > 0 ? updatedDevices[0] : null);
+                }
+                return updatedDevices;
+              });
             }}
           />
         ) : (
@@ -194,32 +211,43 @@ const Dashboard = ({ onLogout }) => {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-4">
-              <div className="relative group">
-                <button className="flex items-center gap-3 px-4 py-2 bg-bg-secondary/50 border border-border-light rounded-xl text-white hover:border-accent-primary/40 transition-all">
+              <div className="relative" ref={dropdownRef}>
+                <button 
+                  onClick={() => setDeviceDropdownOpen(!deviceDropdownOpen)}
+                  className="flex items-center gap-3 px-4 py-2 bg-bg-secondary/50 border border-border-light rounded-xl text-white hover:border-accent-primary/40 transition-all"
+                >
                   <MapPin className="text-accent-primary" size={18} />
                   <span className="font-semibold">{selectedDevice?.location || 'Select Unit'}</span>
-                  <ChevronDown size={16} className="text-text-muted" />
+                  <ChevronDown size={16} className={`text-text-muted transition-transform ${deviceDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
-                <div className="absolute top-full left-0 mt-2 w-64 bg-bg-secondary border border-border-light rounded-xl shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                  {devices.map(device => (
-                    <button
-                      key={device.device_id}
-                      onClick={() => setSelectedDevice(device)}
-                      className={`w-full text-left px-4 py-3 hover:bg-white/5 transition-colors flex flex-col ${selectedDevice?.device_id === device.device_id ? 'bg-accent-primary/10 border-l-2 border-accent-primary' : ''}`}
-                    >
-                      <span className="text-white font-medium">{device.location}</span>
-                      <span className="text-[10px] font-mono text-text-muted uppercase tracking-tighter">{device.device_id}</span>
-                    </button>
-                  ))}
-                  <div className="border-t border-white/5 p-2">
-                     <button 
-                      onClick={() => setShowRegisterModal(true)}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-accent-primary/10 text-accent-primary text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-accent-primary hover:text-bg-primary transition-all"
-                     >
-                       <Plus size={14} /> Add Hardware Unit
-                     </button>
+                {deviceDropdownOpen && (
+                  <div className="absolute top-full right-0 md:left-0 mt-2 w-64 bg-bg-secondary border border-border-light rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
+                    {devices.map(device => (
+                      <button
+                        key={device.device_id}
+                        onClick={() => {
+                          setSelectedDevice(device);
+                          setDeviceDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 hover:bg-white/5 transition-colors flex flex-col ${selectedDevice?.device_id === device.device_id ? 'bg-accent-primary/10 border-l-2 border-accent-primary' : ''}`}
+                      >
+                        <span className="text-white font-medium">{device.location}</span>
+                        <span className="text-[10px] font-mono text-text-muted uppercase tracking-tighter">{device.device_id}</span>
+                      </button>
+                    ))}
+                    <div className="border-t border-white/5 p-2">
+                       <button 
+                        onClick={() => {
+                          setShowRegisterModal(true);
+                          setDeviceDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-accent-primary/10 text-accent-primary text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-accent-primary hover:text-bg-primary transition-all"
+                       >
+                         <Plus size={14} /> Add Hardware Unit
+                       </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               <div className="status-badge flex items-center gap-3 px-4 py-2 bg-bg-secondary/50 border border-border-light rounded-full">
                 <div className={`w-2 h-2 rounded-full animate-pulse ${!isOnline ? 'bg-accent-danger' : 'bg-accent-secondary'}`}></div>
