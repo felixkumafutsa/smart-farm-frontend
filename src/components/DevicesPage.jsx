@@ -1,7 +1,28 @@
-import React from 'react';
-import { Cpu, MapPin, Navigation, Plus } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Cpu, MapPin, Navigation, Plus, MoreVertical, Edit2, Trash2, Activity } from 'lucide-react';
 
 const DevicesPage = ({ devices, onAddDevice }) => {
+  const [activeMenuId, setActiveMenuId] = useState(null);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setActiveMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleDeviceClick = (e, deviceId) => {
+    if (activeMenuId === deviceId) {
+      setActiveMenuId(null);
+    } else {
+      setActiveMenuId(deviceId);
+    }
+  };
+
   return (
     <div className="flex-1 p-4 md:p-8 overflow-auto">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 animate-in fade-in slide-in-from-top duration-700">
@@ -43,7 +64,11 @@ const DevicesPage = ({ devices, onAddDevice }) => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {devices.map(device => (
-            <div key={device.device_id} className="glass-panel p-6 flex flex-col hover:border-accent-primary/30 transition-colors animate-fade-in group">
+            <div 
+              key={device.device_id} 
+              onClick={(e) => handleDeviceClick(e, device.device_id)}
+              className="glass-panel p-6 flex flex-col hover:border-accent-primary/30 transition-colors animate-fade-in group relative cursor-pointer"
+            >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 bg-accent-primary/10 rounded-xl border border-accent-primary/20 text-accent-primary group-hover:scale-110 transition-transform">
@@ -57,6 +82,16 @@ const DevicesPage = ({ devices, onAddDevice }) => {
                     </div>
                   </div>
                 </div>
+                <button 
+                  className="p-1.5 text-text-muted hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeviceClick(e, device.device_id);
+                  }}
+                  title="Manage Unit"
+                >
+                  <MoreVertical size={20} />
+                </button>
               </div>
               
               <div className="mt-auto pt-4 border-t border-white/5 space-y-3">
@@ -77,6 +112,40 @@ const DevicesPage = ({ devices, onAddDevice }) => {
                    <span className="text-accent-secondary font-medium tracking-wide uppercase text-xs">Provisioned</span>
                  </div>
               </div>
+              
+              {/* Context Menu Dropdown */}
+              {activeMenuId === device.device_id && (
+                <div 
+                  ref={menuRef}
+                  className="absolute top-16 right-4 z-50 w-48 bg-bg-secondary border border-border-light rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-2 space-y-1">
+                    <button 
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white hover:bg-white/5 rounded-lg transition-colors"
+                      onClick={() => { alert('View Telemetry: ' + device.device_id); setActiveMenuId(null); }}
+                    >
+                      <Activity size={16} className="text-accent-primary" />
+                      <span>View Telemetry</span>
+                    </button>
+                    <button 
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white hover:bg-white/5 rounded-lg transition-colors"
+                      onClick={() => { alert('Edit Device: ' + device.device_id); setActiveMenuId(null); }}
+                    >
+                      <Edit2 size={16} className="text-accent-secondary" />
+                      <span>Edit Device</span>
+                    </button>
+                    <div className="h-px bg-border-light my-1" />
+                    <button 
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-accent-danger hover:bg-accent-danger/10 rounded-lg transition-colors"
+                      onClick={() => { alert('Delete Device: ' + device.device_id); setActiveMenuId(null); }}
+                    >
+                      <Trash2 size={16} />
+                      <span>Remove Unit</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
