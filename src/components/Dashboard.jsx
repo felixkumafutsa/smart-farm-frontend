@@ -168,6 +168,16 @@ const Dashboard = ({ onLogout }) => {
           <DevicesPage 
             devices={devices} 
             onAddDevice={() => setShowRegisterModal(true)} 
+            onUpdateDevice={(updated) => {
+              setDevices(prev => prev.map(d => d.device_id === updated.device_id ? { ...d, ...updated } : d));
+            }}
+            onDeleteDevice={(deviceId) => {
+              setDevices(prev => prev.filter(d => d.device_id !== deviceId));
+              if (selectedDevice?.device_id === deviceId) {
+                const remaining = devices.filter(d => d.device_id !== deviceId);
+                setSelectedDevice(remaining.length > 0 ? remaining[0] : null);
+              }
+            }}
           />
         ) : (
         <div className="flex-1 p-4 md:p-8 overflow-auto">

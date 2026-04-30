@@ -1,7 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Cpu, MapPin, Navigation, Plus, MoreVertical, Edit2, Trash2, Activity } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { updateDevice, deleteDevice } from '../services/api';
 
-const DevicesPage = ({ devices, onAddDevice }) => {
+const darkSwal = Swal.mixin({
+  background: '#1e293b',
+  color: '#f8fafc',
+  confirmButtonColor: '#22c55e',
+  cancelButtonColor: '#ef4444',
+  customClass: {
+    popup: 'rounded-2xl border border-white/10 shadow-2xl backdrop-blur-xl',
+    title: 'text-2xl font-bold text-white',
+    htmlContainer: 'text-text-muted',
+    confirmButton: 'px-6 py-2 rounded-xl font-bold uppercase tracking-widest text-xs transition-all hover:scale-105',
+    cancelButton: 'px-6 py-2 rounded-xl font-bold uppercase tracking-widest text-xs transition-all hover:scale-105'
+  },
+  buttonsStyling: true
+});
+
+const DevicesPage = ({ devices, onAddDevice, onUpdateDevice, onDeleteDevice }) => {
   const [activeMenuId, setActiveMenuId] = useState(null);
   const menuRef = useRef(null);
 
@@ -20,6 +37,115 @@ const DevicesPage = ({ devices, onAddDevice }) => {
       setActiveMenuId(null);
     } else {
       setActiveMenuId(deviceId);
+    }
+  };
+
+  const handleView = (device) => {
+    darkSwal.fire({
+      title: 'Unit Telemetry',
+      html: `
+        <div class="text-left space-y-4 mt-4">
+          <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+            <p class="text-xs text-text-muted uppercase tracking-widest mb-1">Device ID</p>
+            <p class="font-mono text-accent-primary">${device.device_id}</p>
+          </div>
+          <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+            <p class="text-xs text-text-muted uppercase tracking-widest mb-1">Location</p>
+            <p class="text-white">${device.location}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+              <p class="text-xs text-text-muted uppercase tracking-widest mb-1">Latitude</p>
+              <p class="text-white">${device.latitude?.toFixed(4)}</p>
+            </div>
+            <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+              <p class="text-xs text-text-muted uppercase tracking-widest mb-1">Longitude</p>
+              <p class="text-white">${device.longitude?.toFixed(4)}</p>
+            </div>
+          </div>
+        </div>
+      `,
+      icon: 'info',
+      iconColor: 'var(--accent-primary)',
+    });
+  };
+
+  const handleEdit = async (device) => {
+    const { value: formValues } = await darkSwal.fire({
+      title: 'Edit Hardware Unit',
+      html: `
+        <div class="space-y-4 mt-6">
+          <div class="text-left">
+            <label class="text-xs text-text-muted uppercase tracking-widest ml-1">Location Label</label>
+            <input id="swal-input1" class="w-full mt-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-accent-primary outline-none transition-all" value="${device.location}">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="text-left">
+              <label class="text-xs text-text-muted uppercase tracking-widest ml-1">Latitude</label>
+              <input id="swal-input2" type="number" step="any" class="w-full mt-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-accent-primary outline-none transition-all" value="${device.latitude}">
+            </div>
+            <div class="text-left">
+              <label class="text-xs text-text-muted uppercase tracking-widest ml-1">Longitude</label>
+              <input id="swal-input3" type="number" step="any" class="w-full mt-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-accent-primary outline-none transition-all" value="${device.longitude}">
+            </div>
+          </div>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Update Unit',
+      preConfirm: () => {
+        return {
+          location: document.getElementById('swal-input1').value,
+          latitude: parseFloat(document.getElementById('swal-input2').value),
+          longitude: parseFloat(document.getElementById('swal-input3').value)
+        }
+      }
+    });
+
+    if (formValues) {
+      try {
+        const updated = await updateDevice(device.device_id, formValues);
+        onUpdateDevice(updated);
+        darkSwal.fire({
+          title: 'Success!',
+          text: 'Hardware unit updated successfully.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        darkSwal.fire('Error', error.message, 'error');
+      }
+    }
+  };
+
+  const handleDelete = async (deviceId) => {
+    const result = await darkSwal.fire({
+      title: 'De-provision Unit?',
+      text: "This will permanently remove the hardware unit from your telemetry network.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it',
+      cancelButtonText: 'Keep it',
+      reverseButtons: true,
+      iconColor: 'var(--accent-danger)'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteDevice(deviceId);
+        onDeleteDevice(deviceId);
+        darkSwal.fire({
+          title: 'Deleted!',
+          text: 'Hardware unit has been removed.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        darkSwal.fire('Error', error.message, 'error');
+      }
     }
   };
 
@@ -130,14 +256,14 @@ const DevicesPage = ({ devices, onAddDevice }) => {
                   <div className="p-2 space-y-1">
                     <button 
                       className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white hover:bg-white/5 rounded-lg transition-colors"
-                      onClick={() => { alert('View Telemetry: ' + device.device_id); setActiveMenuId(null); }}
+                      onClick={() => { handleView(device); setActiveMenuId(null); }}
                     >
                       <Activity size={16} className="text-accent-primary" />
                       <span>View Telemetry</span>
                     </button>
                     <button 
                       className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white hover:bg-white/5 rounded-lg transition-colors"
-                      onClick={() => { alert('Edit Device: ' + device.device_id); setActiveMenuId(null); }}
+                      onClick={() => { handleEdit(device); setActiveMenuId(null); }}
                     >
                       <Edit2 size={16} className="text-accent-secondary" />
                       <span>Edit Device</span>
@@ -145,7 +271,7 @@ const DevicesPage = ({ devices, onAddDevice }) => {
                     <div className="h-px bg-border-light my-1" />
                     <button 
                       className="w-full flex items-center gap-2 px-3 py-2 text-sm text-accent-danger hover:bg-accent-danger/10 rounded-lg transition-colors"
-                      onClick={() => { alert('Delete Device: ' + device.device_id); setActiveMenuId(null); }}
+                      onClick={() => { handleDelete(device.device_id); setActiveMenuId(null); }}
                     >
                       <Trash2 size={16} />
                       <span>Remove Unit</span>

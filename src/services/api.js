@@ -87,3 +87,35 @@ export const fetchHistoryData = async (deviceId, hours = 24) => {
     const data = await response.json();
     return data.history || [];
 };
+
+export const updateDevice = async (deviceId, deviceData) => {
+    const response = await fetch(`${API_BASE_URL}/api/devices/${deviceId}`, {
+        ...getFetchOptions('PATCH', deviceData),
+        headers: {
+            ...getFetchOptions('PATCH').headers,
+            'Authorization': `Bearer ${getToken()}`
+        }
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || 'Update failed');
+    }
+    return data.device;
+};
+
+export const deleteDevice = async (deviceId) => {
+    const response = await fetch(`${API_BASE_URL}/api/devices/${deviceId}`, {
+        ...getFetchOptions('DELETE'),
+        headers: {
+            ...getFetchOptions('DELETE').headers,
+            'Authorization': `Bearer ${getToken()}`
+        }
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || 'Deletion failed');
+    }
+    return data;
+};
