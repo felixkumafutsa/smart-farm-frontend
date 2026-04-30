@@ -106,10 +106,17 @@ const DevicesPage = ({ devices, onAddDevice }) => {
                  </div>
                  <div className="flex items-center justify-between text-sm">
                    <div className="flex items-center gap-2 text-text-muted">
-                     <div className="w-2 h-2 rounded-full bg-accent-secondary animate-pulse" />
+                     <div className={`w-2 h-2 rounded-full ${device.online ? 'bg-accent-secondary animate-pulse' : 'bg-accent-danger'}`} />
                      <span>Status</span>
                    </div>
-                   <span className="text-accent-secondary font-medium tracking-wide uppercase text-xs">Provisioned</span>
+                   <div className="flex flex-col items-end">
+                     <span className={`font-medium tracking-wide uppercase text-xs ${device.online ? 'text-accent-secondary' : 'text-accent-danger'}`}>
+                       {device.online ? 'Online' : 'Offline'}
+                     </span>
+                     <span className="text-[10px] text-text-muted">
+                       {device.last_seen ? `Seen ${device.last_seen.toLowerCase()}` : 'Never seen'}
+                     </span>
+                   </div>
                  </div>
               </div>
               
